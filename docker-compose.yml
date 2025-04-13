@@ -1,0 +1,27 @@
+﻿name: vreeda-service-sample-dotnet
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'  # Expose MongoDB on localhost:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db  # Persist data in a Docker volume
+  
+  token-refresh-task:
+    image: curlimages/curl:7.87.0
+    container_name: token-refresh-task
+    entrypoint: >
+      /bin/sh -c "
+      while true; do
+        sleep 300;
+        curl -k -X GET https://host.docker.internal:3000/api/jobs/refresh-tokens?key=your-secure-key;
+      done
+      "
+
+volumes:
+  mongodb_data:
