@@ -15,8 +15,11 @@ export default function DeviceList({selectedDevices, onSelectionChange}: {select
     try {
       const response = await fetch('/api/vreeda/list-devices');
       if (!response.ok) throw new Error('Failed to fetch devices');
-      const data: DevicesResponse = await response.json();
-      setDevices(data);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch devices');
+      }
+      setDevices(result.data as DevicesResponse);
     } catch (err) {
       setError((err as Error).message);
     } finally {

@@ -65,11 +65,14 @@ public static class Callback
             }
 
             // Decode access token to extract user details
-            var accessToken = tokenData.access_token;
+            var accessToken = tokenData.AccessToken;
             var decodedAccessToken = JwtPayload.Base64UrlDeserialize(accessToken.Split('.')[1]); // Simplified parsing
             var userId = decodedAccessToken["sub"].ToString();
             
-            //TODO check userId for null
+            if (userId == null)
+            {
+                return Results.Problem("Failed to get userId from token.", null, 500);
+            }
 
             // Save tokens to session
             context.Session.SetString("access_token", accessToken);
@@ -81,9 +84,9 @@ public static class Callback
             existingUser.ApiAccessTokens = new ApiAccessTokens
             {
                 AccessToken = accessToken,
-                RefreshToken = tokenData.refresh_token,
-                AccessTokenExpiration = DateTime.UtcNow.AddSeconds(tokenData.expires_in),
-                RefreshTokenExpiration = DateTime.UtcNow.AddSeconds(tokenData.refresh_token_expires_in)
+                RefreshToken = tokenData.RefreshToken,
+                AccessTokenExpiration = DateTime.UtcNow.AddSeconds(tokenData.ExpiresIn),
+                RefreshTokenExpiration = DateTime.UtcNow.AddSeconds(tokenData.RefreshTokenExpiresIn)
             };
             await serviceState.UpsertApiAccessTokens(existingUser, CancellationToken.None);
 

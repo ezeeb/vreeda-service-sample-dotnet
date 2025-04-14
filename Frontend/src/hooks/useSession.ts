@@ -23,7 +23,15 @@ const useSession = () => {
         const response = await fetch('/api/auth/session', {
           credentials: 'include',  // Stellt sicher, dass das Cookie gesendet wird
         });
-        const data = await response.json() as SessionData;
+        const result = await response.json();
+        
+        if (!result.success) {
+          setLoggedIn(false);
+          setUser({});
+          return;
+        }
+        
+        const data = result.data as SessionData;
 
         if (data.loggedIn) {
           setLoggedIn(true);

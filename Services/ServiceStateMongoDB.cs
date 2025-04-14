@@ -3,14 +3,15 @@ namespace VreedaServiceSampleDotNet.Services;
 using MongoDB.Driver;
 using Models;
 
-public class ServiceStateMongoDB: BaseMongoDbCollection<UserContext, string>, IServiceState
+public class ServiceStateMongoDb : BaseMongoDbCollection<UserContext, string>, IServiceState
 {
     private const string CollectionName = "users";
 
-    public ServiceStateMongoDB(IMongoClient client, string databaseName, ILogger<ServiceStateMongoDB> logger)
+    public ServiceStateMongoDb(IMongoClient client, string databaseName, ILogger<ServiceStateMongoDb> logger)
         : base(client, databaseName, CollectionName)
     {
-        logger.LogInformation($"Initialized service state repository using collection '{CollectionName}' in database '{databaseName}'");
+        logger.LogInformation(
+            $"Initialized service state repository using collection '{CollectionName}' in database '{databaseName}'");
     }
 
     protected override FilterDefinition<UserContext> IdFilter(string uniqueId)
@@ -21,7 +22,8 @@ public class ServiceStateMongoDB: BaseMongoDbCollection<UserContext, string>, IS
     public async Task<UserContext> GetOrCreateUserContext(string userId, CancellationToken cancellationToken)
     {
         var user = await GetById(userId, cancellationToken);
-        return user ?? new UserContext { UserId = userId, Configuration = new UserConfiguration(), CreatedAt = DateTime.UtcNow };
+        return user ?? new UserContext
+            { UserId = userId, Configuration = new UserConfiguration(), CreatedAt = DateTime.UtcNow };
     }
 
     public async Task<bool> HasUserContext(string userId, CancellationToken cancellationToken)
@@ -33,7 +35,8 @@ public class ServiceStateMongoDB: BaseMongoDbCollection<UserContext, string>, IS
     public async Task<bool> HasUserGranted(string userId, CancellationToken cancellationToken)
     {
         var user = await GetById(userId, cancellationToken);
-        return user?.ApiAccessTokens?.AccessTokenExpiration > DateTime.UtcNow;
+        return user?.ApiAccessTokens?.AccessTokenExpiration > DateTime.UtcNow && 
+               user?.ApiAccessTokens?.RefreshTokenExpiration > DateTime.UtcNow;
     }
 
     public async Task<bool> RevokeGrant(string userId, CancellationToken cancellationToken)
@@ -63,7 +66,8 @@ public class ServiceStateMongoDB: BaseMongoDbCollection<UserContext, string>, IS
         return await Upsert(context.UserId, update, cancellationToken);
     }
 
-    public async Task<IEnumerable<UserContext>> FindExpiredAccessTokens(DateTime threshold, CancellationToken cancellationToken)
+    public async Task<IEnumerable<UserContext>> FindExpiredAccessTokens(DateTime threshold,
+        CancellationToken cancellationToken)
     {
         var filter = Builders<UserContext>.Filter.Lte(c => c.ApiAccessTokens!.AccessTokenExpiration, threshold);
         return await GetManyBy(filter, cancellationToken);

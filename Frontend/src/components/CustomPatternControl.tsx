@@ -32,9 +32,12 @@ export default function CustomPatternControl({selectedDevices}: {selectedDevices
                         throw new Error('Failed to update device');
                     }
                 
-                    const data = await response.json();
-                    console.log('Device updated successfully:', data);
-                    return data;
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to update device');
+                    }
+                    console.log('Device updated successfully:', result.data);
+                    return result.data;
                 } catch (error) {
                     setError((error as Error).message);
                     console.log('Error running pattern: ', error);

@@ -20,9 +20,12 @@ export default function DeviceControl({ id, model, selected, onSelectionChange}:
         throw new Error('Failed to update device');
       }
   
-      const data = await response.json();
-      console.log('Device updated successfully:', data);
-      return data;
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update device');
+      }
+      console.log('Device updated successfully:', result.data);
+      return result.data;
     } catch (error) {
       console.log('Error updating device:', error);
       throw error;

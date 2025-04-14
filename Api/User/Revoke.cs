@@ -12,33 +12,26 @@ public static class Revoke
             var userId = context.Session.GetString("user_id");
             if (string.IsNullOrEmpty(userId))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
-            
-            if (! await serviceState.HasUserContext(userId, CancellationToken.None))
+
+            if (!await serviceState.HasUserContext(userId, CancellationToken.None))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
 
-            try
+            // Delete user context
+            var result = await serviceState.RevokeGrant(userId, CancellationToken.None);
+
+            if (!result)
             {
-                // Delete user context
-                var result = await serviceState.RevokeGrant(userId, CancellationToken.None);
-
-                if (!result)
-                {
-                    return Results.Json(new { error = "User context not found" }, statusCode: 404);
-                }
-
-                // Delete session
-                context.Session.Clear();
-
-                return Results.Json(new { message = "User revoked and logged out" }, statusCode: 200);
+                return OperationResult.NotFound("User context not found").ToResult();
             }
-            catch (Exception)
-            {
-                return Results.Json(new { error = "Failed to revoke user" }, statusCode: 500);
-            }
+
+            // Delete session
+            context.Session.Clear();
+
+            return OperationResult.Ok(new { message = "User revoked and logged out" }).ToResult();
         });
     }
 }

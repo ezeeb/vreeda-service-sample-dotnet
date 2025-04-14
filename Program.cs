@@ -3,6 +3,8 @@ using MongoDB.Driver;
 using VreedaServiceSampleDotNet.Api;
 using VreedaServiceSampleDotNet.Models;
 using VreedaServiceSampleDotNet.Services;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true) // Lokale Datei laden
+    .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true) // Load local file
     .AddEnvironmentVariables();
 
 // bind app settings
@@ -22,7 +24,26 @@ builder.Services.AddSingleton(appSettings);
 builder.Services.AddHttpClient("AdB2cClient");
 
 // create vreeda api http client
-builder.Services.AddHttpClient("VreedaApiClient");
+builder.Services.AddHttpClient("VreedaApiClient")
+    .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+// Helper method for Retry-Policy
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}
+
+// Helper method for Circuit-Breaker-Policy
+static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+}
 
 // create vreeda api client
 builder.Services.AddScoped<IVreedaApiClient, VreedaApiClient>();
@@ -42,12 +63,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(appSettings.MongoDBOptions.ConnectionString));
 
 // register ServiceState service
-builder.Services.AddScoped<IServiceState, ServiceStateMongoDB>(sp =>
+builder.Services.AddScoped<IServiceState, ServiceStateMongoDb>(sp =>
 {
     var mongoClient = sp.GetRequiredService<IMongoClient>();
     var dbName = appSettings.MongoDBOptions.DbName;
-    var logger = sp.GetRequiredService<ILogger<ServiceStateMongoDB>>();
-    return new ServiceStateMongoDB(mongoClient, dbName, logger);
+    var logger = sp.GetRequiredService<ILogger<ServiceStateMongoDb>>();
+    return new ServiceStateMongoDb(mongoClient, dbName, logger);
 });
 
 // Add In-Memory Cache for session storage
@@ -93,3 +114,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.Run();
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public partial class Program { }

@@ -16,8 +16,11 @@ export const Home = () => {
     try {
       const response = await fetch(`/api/user/configuration`);
       if (!response.ok) throw new Error("Failed to fetch configuration");
-      const data = await response.json();
-      setSelectedDevices(data.devices || []);
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch configuration');
+      }
+      setSelectedDevices(result.data.devices || []);
     } catch (error) {
       console.error("Error fetching selected devices:", error);
     }
@@ -45,6 +48,11 @@ export const Home = () => {
         throw new Error("Failed to update configuration");
       }
 
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update configuration');
+      }
+
       console.log("Configuration updated successfully");
     } catch (error) {
       console.error("Error updating configuration:", error);
@@ -58,8 +66,11 @@ export const Home = () => {
       if (!response.ok) {
         throw new Error("Failed to check grant status");
       }
-      const data = await response.json();
-      setGrantStatus(data.granted ? "active" : "needs renewal");
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to check grant status');
+      }
+      setGrantStatus(result.data.granted ? "active" : "needs renewal");
     } catch (error) {
       console.error("Error checking grant status:", error);
       setGrantStatus("needs renewal");

@@ -13,55 +13,52 @@ public static class Configuration
             var userId = context.Session.GetString("user_id");
             if (string.IsNullOrEmpty(userId))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
-            
+
             // Retrieve user context
             var userContext = await serviceState.GetOrCreateUserContext(userId, CancellationToken.None);
 
             // Return configuration
-            return Results.Json(userContext.Configuration ?? new UserConfiguration(), statusCode: 200);
+            return OperationResult.Ok(userContext.Configuration ?? new UserConfiguration()).ToResult();
         });
-        
+
         routes.MapPost("/configuration", async (HttpContext context, IServiceState serviceState) =>
         {
             // Check if the session contains a user ID
             var userId = context.Session.GetString("user_id");
             if (string.IsNullOrEmpty(userId))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
 
-            if (! await serviceState.HasUserContext(userId, CancellationToken.None))
+            if (!await serviceState.HasUserContext(userId, CancellationToken.None))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
 
-            try
+            // Read JSON data from the request
+            var body = await context.Request.ReadFromJsonAsync<UserConfiguration>();
+            if (body?.Devices == null)
             {
-                // Read JSON data from the request
-                var body = await context.Request.ReadFromJsonAsync<UserConfiguration>();
-                if (body?.devices == null)
+                return OperationResult.BadRequest("Invalid or missing configuration").ToResult();
+            }
+
+            // Validate devices array
+            foreach (var device in body.Devices)
+            {
+                if (string.IsNullOrWhiteSpace(device))
                 {
-                    return Results.Json(new { error = "Invalid or missing configuration" }, statusCode: 400);
+                    return OperationResult.BadRequest("Device IDs cannot be empty").ToResult();
                 }
-
-                // Retrieve and update user context
-                var userContext = await serviceState.GetOrCreateUserContext(userId, CancellationToken.None);
-                userContext.Configuration = body;
-
-                var updated = await serviceState.UpsertConfiguration(userContext, CancellationToken.None);
-                if (!updated)
-                {
-                    return Results.Json(new { error = "Failed to update configuration" }, statusCode: 500);
-                }
-
-                return Results.Json(body, statusCode: 200);
             }
-            catch (Exception)
-            {
-                return Results.Json(new { error = "Failed to update configuration" }, statusCode: 500);
-            }
+
+            // Retrieve and update user context
+            var userContext = await serviceState.GetOrCreateUserContext(userId, CancellationToken.None);
+            userContext.Configuration = body;
+
+            var updated = await serviceState.UpsertConfiguration(userContext, CancellationToken.None);
+            return !updated ? OperationResult.Error("Failed to update configuration").ToResult() : OperationResult.Ok(body).ToResult();
         });
     }
 }

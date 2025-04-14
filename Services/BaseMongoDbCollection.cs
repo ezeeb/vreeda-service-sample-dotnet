@@ -22,7 +22,8 @@ public abstract class BaseMongoDbCollection<TDocument, TKey>
         return await _collection.Find(IdFilter(id)).FirstOrDefaultAsync(cancellationToken);
     }
 
-    protected async Task<IEnumerable<TDocument>> GetManyBy(FilterDefinition<TDocument> filter, CancellationToken cancellationToken)
+    protected async Task<IEnumerable<TDocument>> GetManyBy(FilterDefinition<TDocument> filter,
+        CancellationToken cancellationToken)
     {
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }

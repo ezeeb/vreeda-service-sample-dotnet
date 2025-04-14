@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.11" />
     <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +33,14 @@
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Pages\Error.cshtml" />
     <_ContentIncludedByDefault Remove="Pages\_ViewImports.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude Tests directory from compilation -->
+    <Compile Remove="vreeda-service-sample-dotnet-tests\**" />
+    <Content Remove="vreeda-service-sample-dotnet-tests\**" />
+    <EmbeddedResource Remove="vreeda-service-sample-dotnet-tests\**" />
+    <None Remove="vreeda-service-sample-dotnet-tests\**" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

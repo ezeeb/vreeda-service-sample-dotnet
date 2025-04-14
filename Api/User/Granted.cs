@@ -12,20 +12,20 @@ public static class Granted
             var userId = context.Session.GetString("user_id");
             if (string.IsNullOrEmpty(userId))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
 
             // check if user has state
             if (! await serviceState.HasUserContext(userId, CancellationToken.None))
             {
-                return Results.Json(new { error = "Unauthorized" }, statusCode: 401);
+                return OperationResult.Unauthorized().ToResult();
             }
             
             // get tokens
             var userContext = await serviceState.GetOrCreateUserContext(userId, CancellationToken.None);
             if (userContext.ApiAccessTokens == null)
             {
-                return Results.Json(new { granted = false, message = "Tokens are missing" }, statusCode: 401);
+                return OperationResult.Unauthorized("Tokens are missing").ToResult();
             }
 
             // check if tokens are expired
@@ -35,11 +35,11 @@ public static class Granted
 
             if (accessTokenExpired || refreshTokenExpired)
             {
-                return Results.Json(new { granted = false, message = "Tokens are expired" }, statusCode: 401);
+                return OperationResult.Unauthorized("Tokens are expired").ToResult();
             }
 
             // access is granted
-            return Results.Json(new { granted = true, message = "Access granted" });
+            return OperationResult.Ok(new { granted = true, message = "Access granted" }).ToResult();
         }); 
     }
 }

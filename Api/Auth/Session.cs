@@ -1,5 +1,7 @@
 namespace VreedaServiceSampleDotNet.Api.Auth;
 
+using Services;
+
 public static class Session
 {
     public static void MapSessionEndpoint(this RouteGroupBuilder routes)
@@ -11,11 +13,11 @@ public static class Session
             // Check if "user_id" exists in the session
             if (string.IsNullOrEmpty(session.GetString("user_id")))
             {
-                return Results.Json(new { logged_in = false });
+                return OperationResult.Ok(new { loggedIn = false }).ToResult();
             }
 
             // Return user details if session exists
-            return Results.Json(new
+            return OperationResult.Ok(new
             {
                 loggedIn = true,
                 user = new
@@ -24,7 +26,7 @@ public static class Session
                     name = session.GetString("name"),
                     email = session.GetString("email")
                 }
-            });
+            }).ToResult();
         });
     }
 }

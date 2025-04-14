@@ -35,12 +35,12 @@ public static class RefreshTokens
                             continue;
                         }
 
-                        // Token-URL
+                        // Token URL
                         var azureAdB2C = appSettings.AzureAdB2C;
                         var tokenUrl =
                             $"https://{azureAdB2C.TenantName}.b2clogin.com/{azureAdB2C.TenantName}.onmicrosoft.com/{azureAdB2C.PrimaryUserFlow}/oauth2/v2.0/token";
 
-                        // Anfrage zum Abrufen neuer Tokens
+                        // Request to retrieve new tokens
                         var client = httpClientFactory.CreateClient("AdB2cClient");
                         var requestContent = new FormUrlEncodedContent(new Dictionary<string, string>
                         {
@@ -66,18 +66,21 @@ public static class RefreshTokens
                             continue;
                         }
 
-                        // Neue Tokens berechnen
-                        var newAccessTokenExpiration = DateTime.UtcNow.AddSeconds(refreshTokenRepsonse.expires_in);
+                        // Calculate new token expiration times
+                        var newAccessTokenExpiration = DateTime.UtcNow.AddSeconds(refreshTokenRepsonse.ExpiresIn);
                         var newRefreshTokenExpiration =
-                            DateTime.UtcNow.AddSeconds(refreshTokenRepsonse.refresh_token_expires_in);
+                            DateTime.UtcNow.AddSeconds(refreshTokenRepsonse.RefreshTokenExpiresIn);
 
-                        // Benutzerkontext aktualisieren
-                        user.ApiAccessTokens.AccessToken = refreshTokenRepsonse.access_token;
-                        user.ApiAccessTokens.RefreshToken = refreshTokenRepsonse.refresh_token;
-                        var oldAccessTokenExpiration = user.ApiAccessTokens.AccessTokenExpiration;
-                        var oldRefreshTokenExpiration = user.ApiAccessTokens.RefreshTokenExpiration;
-                        user.ApiAccessTokens.AccessTokenExpiration = newAccessTokenExpiration;
-                        user.ApiAccessTokens.RefreshTokenExpiration = newRefreshTokenExpiration;
+                        // Update user context
+                        var oldAccessTokenExpiration = user.ApiAccessTokens?.AccessTokenExpiration;
+                        var oldRefreshTokenExpiration = user.ApiAccessTokens?.RefreshTokenExpiration;
+                        user.ApiAccessTokens = new ApiAccessTokens
+                        {
+                            AccessToken = refreshTokenRepsonse.AccessToken,
+                            RefreshToken = refreshTokenRepsonse.RefreshToken,
+                            AccessTokenExpiration = newAccessTokenExpiration,
+                            RefreshTokenExpiration = newRefreshTokenExpiration
+                        };
 
                         await serviceState.UpsertApiAccessTokens(user, CancellationToken.None);
 

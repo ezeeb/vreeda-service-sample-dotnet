@@ -10,7 +10,7 @@ public static class Login
         {
             var azureAdB2COptions = appSettings.AzureAdB2C;
 
-            // Werte aus der Konfiguration lesen
+            // Read values from configuration
             var tenantName = azureAdB2COptions.TenantName;
             var clientId = azureAdB2COptions.ClientId;
             var hostUrl = appSettings.HostUrl;
@@ -19,7 +19,7 @@ public static class Login
             var redirectUri = $"{hostUrl}/api/auth/callback/azure-ad-b2c";
             var authority = $"https://{tenantName}.b2clogin.com/{tenantName}.onmicrosoft.com/{policy}";
 
-            // Erstelle die Authorisierungs-URL
+            // Create the authorization URL
             var authorizationUrl = $"{authority}/oauth2/v2.0/authorize?" +
                                    $"client_id={clientId}&" +
                                    $"response_type=code&" +
@@ -28,7 +28,7 @@ public static class Login
                                    $"scope={Uri.EscapeDataString(clientId + " offline_access openid")}&" +
                                    $"state=12345";
 
-            // Redirect zur Authorisierungs-URL
+            // Redirect to the authorization URL
             return Results.Redirect(authorizationUrl);
         });
     }
