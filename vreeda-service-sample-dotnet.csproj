@@ -37,10 +37,10 @@
 
   <ItemGroup>
     <!-- Exclude Tests directory from compilation -->
-    <Compile Remove="vreeda-service-sample-dotnet-tests\**" />
-    <Content Remove="vreeda-service-sample-dotnet-tests\**" />
-    <EmbeddedResource Remove="vreeda-service-sample-dotnet-tests\**" />
-    <None Remove="vreeda-service-sample-dotnet-tests\**" />
+    <Compile Remove="Tests\**" />
+    <Content Remove="Tests\**" />
+    <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Tests\**" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

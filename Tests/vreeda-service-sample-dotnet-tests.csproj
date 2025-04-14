@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <RootNamespace>vreeda-service-sample-dotnet-tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,10 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\vreeda-service-sample-dotnet.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="obj\Debug\" />
   </ItemGroup>
 
 </Project>

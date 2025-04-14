@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vreeda-service-sample-dotnet-tests", "vreeda-service-sample-dotnet-tests\vreeda-service-sample-dotnet-tests.csproj", "{F4976712-116C-48C1-87BE-12826FF9E40B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vreeda-service-sample-dotnet-tests", "Tests\vreeda-service-sample-dotnet-tests.csproj", "{F4976712-116C-48C1-87BE-12826FF9E40B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vreeda-service-sample-dotnet", "vreeda-service-sample-dotnet.csproj", "{CF5D239C-CF68-4FB5-8DFF-6A13EFC9F978}"
 EndProject
